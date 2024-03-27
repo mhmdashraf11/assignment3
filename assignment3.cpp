@@ -1,3 +1,15 @@
+// File name:
+// Purpose: photoshop
+/* Authors:
+ * 1) Mohamed Ashraf Mohamed Hassan, ID: 20230321,Filters taken: Invert image, Rotate image, the menu 
+ * 2) Bassam Yasser Mohamed Hassan, ID: 20230089,Filters taken: Gray scale
+ * 3) Basmala Mamdouh Esmail Abdelhamid, ID: 20230092,Filters taken: Black and white, flip
+ */
+/* Emails:
+ * 1) mohamed4ashraf2019@gmail.com
+ * 2) bassamyasser12@gmail.com
+ * 3) basmalamamdouh97@gmail.com
+ */
 
 #include <iostream>
 #include "Image_Class.h"
@@ -149,23 +161,7 @@ void bandw(Image& image){ // Black and white
         }
     }
 }
-//void rotate270(Image& img) {
-//    int newWidth = img.height; // Swap width and height for a 270-degree rotation
-//    int newHeight = img.width;
-//    Image rotatedImage(newWidth, newHeight);
-//
-//    for (int y = 0; y < img.height; y++) {
-//        for (int x = 0; x < img.width; x++) {
-//            int newX = img.height - y - 1; // Adjusted coordinates for 270-degree rotation
-//            int newY = x;
-//            for (int k = 0; k < 3; k++) {
-//                rotatedImage.setPixel(newX, newY, k, img.getPixel(x, y, k));
-//            }
-//        }
-//    }
-//
-//    img = rotatedImage; // Store rotatedImage in img
-//}
+
 void rotate90(Image& img) {
     // Swap width and height for a 270-degree rotation
     int newWidth = img.height;
