@@ -1,53 +1,37 @@
-#include <iostream>
-#include <cmath>
 #include "Image_Class.h"
-
+#include <iostream>
 using namespace std;
 
-void GaussianBlur(Image &image, int kernelSize, float sigma) {
-    int halfKernelSize = kernelSize / 2;
-    float *kernel = new float[kernelSize * kernelSize];
-    float sum = 0;
-
-    // Calculate Gaussian kernel
-    for (int i = -halfKernelSize; i <= halfKernelSize; i++) {
-        for (int j = -halfKernelSize; j <= halfKernelSize; j++) {
-            float x = i * i + j * j;
-            kernel[(i + halfKernelSize) * kernelSize + j + halfKernelSize] = exp(-x / (2 * sigma * sigma)) / (2 * M_PI * sigma * sigma);
-            sum += kernel[(i + halfKernelSize) * kernelSize + j + halfKernelSize];
-        }
-    }
-
-    // Normalize kernel
-    for (int i = 0; i < kernelSize * kernelSize; i++) {
-        kernel[i] /= sum;
-    }
-
-    // Apply Gaussian blur to image
-    for (int y = 0; y < image.height; y++) {
-        for (int x = 0; x < image.width; x++) {
-            float r = 0, g = 0, b = 0;
-            for (int i = -halfKernelSize; i <= halfKernelSize; i++) {
-                for (int j = -halfKernelSize; j <= halfKernelSize; j++) {
-                    if (x + j >= 0 && x + j < image.width && y + i >= 0 && y + i < image.height) {
-                        r += image.getPixel(x + j, y + i, 0) * kernel[(i + halfKernelSize) * kernelSize + j + halfKernelSize];
-                        g += image.getPixel(x + j, y + i, 1) * kernel[(i + halfKernelSize) * kernelSize + j + halfKernelSize];
-                        b += image.getPixel(x + j, y + i, 2) * kernel[(i + halfKernelSize) * kernelSize + j + halfKernelSize];
-                    }
+void Blur(Image& img){
+    int avgR, avgG, avgB;
+    for (int i = 21; i < img.width - 21; i++) {
+        for (int j = 21; j < img.height - 21; j++) {
+            int sumR = 0, sumG = 0, sumB = 0;
+            for (int m = -21; m <= 21; m++) {
+                for (int n = -21; n <= 21; n++) {
+                
+                    sumR += img(i + m, j + n, 0);
+                    sumG += img(i + m, j + n, 1);
+                    sumB += img(i + m, j + n, 2);
+                    
                 }
             }
-            image.setPixel(x, y, 0, r);
-            image.setPixel(x, y, 1, g);
-            image.setPixel(x, y, 2, b);
+            avgR = sumR / 1849;
+            avgG = sumG / 1849;
+            avgB = sumB / 1849;
+            img(i, j, 0) = avgR;
+            img(i, j, 1) = avgG;
+            img(i, j, 2) = avgB;
         }
+        
     }
-
-    delete[] kernel;
 }
 
 int main() {
-    Image image("building.jpg");
-    GaussianBlur(image, 59, 30.0);
-    image.saveImage("more_blurred_mario.jpg");
+    Image img("building.jpg");
+    int i = 0;
+    Blur(img);
+    img.saveImage("blur.jpg");
+
     return 0;
 }
