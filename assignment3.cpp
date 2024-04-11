@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include "Image_Class.h"
+#include <vector>
 using namespace std;
 bool isValidFilename(const string& filename) {   //from Image_class.h
     const char* extension = strrchr(filename.c_str(), '.');
@@ -90,20 +91,20 @@ void flip_horizontal(Image& image){
 }
 
 void choice_flip(Image& img){
-        cout << "What type of flip do you need?\n";
-        cout << "1)Flip vertical\n2)Flip horizontal\n";
-        string choice;
-        cin >> choice;
-        cin.ignore(); // Clear the newline character from the input buffer
+    cout << "What type of flip do you need?\n";
+    cout << "1)Flip vertical\n2)Flip horizontal\n";
+    string choice;
+    cin >> choice;
+    cin.ignore(); // Clear the newline character from the input buffer
 
-        if(choice == "1"){
-             flip_vertical(img);
-        }else if(choice == "2"){
-             flip_horizontal(img);
-        }else{
-            cout << "Invalid choice,Please enter a valid choice." << endl << endl;
-            return choice_flip(img);
-        }
+    if(choice == "1"){
+        flip_vertical(img);
+    }else if(choice == "2"){
+        flip_horizontal(img);
+    }else{
+        cout << "Invalid choice,Please enter a valid choice." << endl << endl;
+        return choice_flip(img);
+    }
 }
 
 void filter1(Image& image){ //Gray scale
@@ -920,6 +921,92 @@ void Darken_and_Lighten(Image& before){
         }
     }
 }
+void detect_image(Image &image){
+    // Convert image to grayscale
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Calculate grayscale value (average of RGB channels)
+            unsigned int avg = 0;
+            for (int k = 0; k < image.channels; ++k) {
+                avg += image(i, j, k);
+            }
+            avg /= image.channels;
+
+            // Assign grayscale value to all color channels
+            for (int k = 0; k < image.channels; ++k) {
+                image(i, j, k) = avg;
+
+            }
+        }
+    }
+
+    // Apply Sobel operator
+    int rows = image.height - 2;
+    int cols = image.width - 2;
+    vector<vector<int>> new_Ix(rows, vector<int>(cols));
+    vector<vector<int>> new_Iy(rows, vector<int>(cols));
+    vector<vector<int>> new_matrix(rows, vector<int>(cols));
+
+    int Ix[3][3] = {
+            {-1, 0, 1},
+            {-2, 0, 2},
+            {-1, 0, 1}
+    };
+
+    int Iy[3][3] = {
+            {1, 2, 1},
+            {0, 0, 0},
+            {-1, -2, -1}
+    };
+
+    // Convolve with Sobel filters
+    for (int i = 0; i < cols; ++i) {
+        for (int j = 0; j < rows; ++j) {
+            int sumIx = 0;
+            int sumIy = 0;
+            for (int m = 0; m < 3; ++m) {
+                for (int n = 0; n < 3; ++n) {
+                    sumIx += image(i + m, j + n, 0) * Ix[m][n];
+                    sumIy += image(i + m, j + n, 0) * Iy[m][n];
+                }
+            }
+            new_Ix[j][i] = sumIx;
+            new_Iy[j][i] = sumIy;
+        }
+    }
+
+    double sum_mat = 0.0;
+    for(int i = 0; i < cols; ++i){
+        for(int j = 0; j < rows; ++j){
+            int sum = sqrt((new_Ix[j][i] * new_Ix[j][i]) + (new_Iy[j][i] * new_Iy[j][i])); // corrected indices
+            new_matrix[j][i] = sum; // corrected indices
+            sum_mat += sum;
+        }
+    }
+    double avg = ceil(sum_mat / (rows * cols));
+
+    for(int i = 0; i < cols; ++i){
+        for(int j = 0; j < rows; ++j) {
+            if (new_matrix[j][i] > avg) {
+                for (int k = 0; k < image.channels; ++k) {
+                    image(i + 1, j + 1, k) = 0;
+                }
+            } else {
+                for (int k = 0; k < image.channels; ++k) {
+                    image(i + 1, j + 1, k) = 255;
+                }
+            }
+        }
+    }
+}
+void purple_image(Image& image){
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Decrease green channel and possibly adjust red and blue channels
+            image(i, j, 1) *= 0.73;
+        }
+    }
+}
 void mainmenu(Image &image){
     string choice;
     cout << "=>Choose the filter\n";
@@ -935,7 +1022,9 @@ void mainmenu(Image &image){
     cout << "10. Frame filter\n";
     cout << "11. Crop image\n";
     cout << "12. Darken and lighten\n";
-    cout<< "13. exit\n";
+    cout << "13. Detect image\n";
+    cout << "14. Purple image\n";
+    cout<< "15. exit\n";
     cin >> choice;
     if(choice == "1"){
         filter1(image);
@@ -975,11 +1064,17 @@ void mainmenu(Image &image){
         Darken_and_Lighten(image);
     }
     else if(choice == "13"){
+        detect_image(image);
+    }
+    else if(choice == "14"){
+        purple_image(image);
+    }
+    else if(choice == "15"){
         cout << "Thanks for your time!\n";
         exit(0);
     }
     else{
-        cout << "Please enter a number between 1 and 10\n";
+        cout << "Please enter a number between 1 and 15\n";
         return mainmenu(image);
     }
     cout << "Do you want to apply another filter?\n";
